@@ -1,10 +1,7 @@
 package br.com.fagnerdev.controller;
 
-
 import br.com.fagnerdev.model.Person;
 import br.com.fagnerdev.services.PersonServices;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,34 +11,49 @@ import java.util.List;
 @RequestMapping("/person")
 public class PersonController {
 
-    @Autowired
-    private PersonServices service;
-    // private PersonServices service = new PersonServices();
+    private final PersonServices personServices;
 
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Person> findAll() {
-        return service.findAll();
+
+    // Injeção de dependência via construtor
+    public PersonController(PersonServices personServices) {
+        this.personServices = personServices;
     }
 
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person findById(@PathVariable("id") Long id) {
-        return service.findById(id);
+    // Endpoint GET para retornar todos os "person"
+    @GetMapping
+    public ResponseEntity<List<Person>> findAll() {
+        List<Person> people = personServices.findAll();
+        return ResponseEntity.ok(people);  // Retorna 200 OK com a lista de pessoas
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person create(@RequestBody Person person) {
-        return service.create(person);
+    // Endpoint GET para retornar uma pessoa por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Person> findById(@PathVariable Long id) {
+        Person person = personServices.findById(id);
+        return person != null ? ResponseEntity.ok(person) : ResponseEntity.notFound().build();
+        // Se a pessoa não for encontrada, retorna 404
     }
 
-    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Person update(@RequestBody Person person) {
-        return service.update(person);
+    // Endpoint POST para criar uma nova pessoa
+    @PostMapping
+    public ResponseEntity<Person> create(@RequestBody Person person) {
+        Person createdPerson = personServices.create(person);
+        return ResponseEntity.status(201).body(createdPerson); // Retorna 201 Created com o novo recurso
     }
 
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    // Endpoint PUT para atualizar uma pessoa existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Person> update(@PathVariable Long id, @RequestBody Person person) {
+        Person updatedPerson = personServices.update(id, person);
+        return ResponseEntity.ok(updatedPerson);
+    }
+
+
+    // Endpoint DELETE para remover uma pessoa por ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        personServices.delete(id);
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content (sem corpo)
     }
 }
