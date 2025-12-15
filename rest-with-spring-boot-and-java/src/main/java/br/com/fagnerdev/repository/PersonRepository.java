@@ -1,4 +1,4 @@
-package br.com.fagnerdev;
+package br.com.fagnerdev.repository;
 
 import br.com.fagnerdev.model.Person;
 import org.springframework.data.jpa.repository.JpaRepository;
